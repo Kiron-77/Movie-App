@@ -1,9 +1,10 @@
 import moment from 'moment'
-import React from 'react'
+import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useParams } from "react-router-dom"
 import Divider from '../components/Divider'
 import HorizontalScrollCard from '../components/HorizontalScrollCard'
+import VideoPlay from '../components/VideoPlay'
 import useFetch from '../hoooks/useFetch'
 import useFetchDetail from '../hoooks/useFetchDetail'
 
@@ -15,9 +16,16 @@ const DetailPage = () => {
   const { data: castData } = useFetchDetail(`/${params?.explore}/${params?.id}/credits`)
   const { data: similarData } = useFetch(`/${params?.explore}/${params?.id}/similar`)
   const {data:recommendationData} = useFetch(`/${params?.explore}/${params?.id}/recommendations`)
+  const [playVideo, setPlayVideo] = useState(false)
+  const[playVideoId,setPlayVideoId] = useState("")
 
   console.log("data", data)
   // console.log("cast data", castData)
+
+  const handlePlayVideo = () => {
+    setPlayVideoId(data)
+    setPlayVideo(true)
+  }
 
   const duration = (data?.runtime / 60).toFixed(1).split(".")
   const writer = castData?.crew?.filter(el => el?.job === "writer")?.map(el=>el?.name)?.join(", ")
@@ -33,6 +41,7 @@ const DetailPage = () => {
             src={imageURL + data?.backdrop_path}
             className='h-full w-full object-cover'
           />
+         
         </div>
         <div className='absolute w-full h-full top-0 bg-gradient-to-t from-neutral-900/90 to-transparent'></div>
       </div>
@@ -42,6 +51,9 @@ const DetailPage = () => {
             src={imageURL + data?.poster_path}
             className='h-80 w-60 object-cover rounded'
           />
+          <button onClick={()=>handlePlayVideo(data)} className='mt-3 w-full py-2 px-4 text-center bg-white text-black rounded font-bold text-lg hover:bg-gradient-to-l from-red-500 to-orange-500 hover:scale-105 transition-all'>
+            Play Now
+          </button>
         </div>
         <div>
           <h2 className='text-2xl lg:text-3xl font-bold text-white'>{data?.title || data?.name}</h2>
@@ -119,6 +131,11 @@ const DetailPage = () => {
         <HorizontalScrollCard data={similarData} heading={"Similar "+ params?.explore} media_type={params?.explore}/>
         <HorizontalScrollCard data={recommendationData} heading={"Recommendation "+ params?.explore} media_type={params?.explore}/>
       </div>
+      {
+        playVideo && (
+          <VideoPlay data={playVideoId} close={()=>setPlayVideo(false)} media_type={params?.explore} />
+        )
+  }
     </div>
   </>)
 }
